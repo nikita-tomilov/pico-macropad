@@ -16,119 +16,87 @@ LED yellow(9, 1023);
 LED blue(11, 768);
 LED white(1, 1023);
 
-#include <Keyboard.h>
+#include "keymap.h"
 
-int mode = 0;
 long lastKeyPressTimestamp = millis();
 double backlightBrightness = 100.0;
-
-void keyPressDetected()
-{
-  lastKeyPressTimestamp = millis();
-}
-
-void normalPress(uint8_t keycode)
-{
-  keyPressDetected();
-  Keyboard.press(keycode);
-
-  delay(10);
-  Keyboard.release(keycode);
-}
-
-void consumerPress(uint16_t keycode)
-{
-  keyPressDetected();
-  Keyboard.consumerPress(keycode);
-  delay(10);
-  Keyboard.consumerRelease();
-}
 
 void enc1click()
 {
   Serial.println("Press 1");
-  consumerPress(KEY_PLAY_PAUSE);
+  consumerKeyPress(O_KEY_PLAY_PAUSE);
 }
 
 void enc1left()
 {
   Serial.println("Left 1 ");
-  consumerPress(KEY_VOLUME_DECREMENT);
+  consumerKeyPress(O_KEY_VOLUME_DECREMENT);
 }
 
 void enc1right()
 {
   Serial.println("Right 1");
-  consumerPress(KEY_VOLUME_INCREMENT);
+  consumerKeyPress(O_KEY_VOLUME_INCREMENT);
 }
 
 void enc1leftH()
 {
-  keyPressDetected();
-  mode -= 1;
+  /*mode -= 1;
   if (mode < 0)
   {
     mode = 0;
   }
-  Serial.println(mode);
+  Serial.println(mode);*/
 }
 
 void enc1rightH()
 {
-  keyPressDetected();
-  mode += 1;
+  /*mode += 1;
   if (mode > 4)
   {
     mode = 4;
   }
-  Serial.println(mode);
+  Serial.println(mode);*/
 }
 
 void enc2click()
 {
   Serial.println("Press 2");
-  normalPress(KEY_RETURN);
+  keyPress(O_KEY_RETURN);
 }
 
 void enc2left()
 {
   Serial.println("Left 2 ");
-  normalPress(KEY_UP_ARROW);
+  keyPress(O_KEY_UP_ARROW);
 }
 
 void enc2right()
 {
   Serial.println("Right 2");
-  normalPress(KEY_DOWN_ARROW);
+  keyPress(O_KEY_DOWN_ARROW);
 }
 
 void enc3click()
 {
   Serial.println("Press 3");
-  
-  //MIDI.sendNoteOn(127, 127, 1);
-    normalPress(KEY_F19);
+  keyPress(O_KEY_F19);
 }
 
 void enc3left()
 {
   Serial.println("Left 3 ");
-  
-  // MIDI.sendNoteOn(125, 127, 1);
-    normalPress(KEY_F17);
+  keyPress(O_KEY_F17);
 }
 
 void enc3right()
 {
   Serial.println("Right 3");
-  
-  // MIDI.sendNoteOn(126, 127, 1);
-    normalPress(KEY_F18);
+  keyPress(O_KEY_F18);
 }
 
 void setup(void)
 {
-  pinMode(LED_BUILTIN, OUTPUT_4MA);
   Serial.begin(115200);
 
   analogWriteFreq(1000);
