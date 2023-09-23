@@ -88,6 +88,11 @@ void ENC::tick()
     {
         this->right();
     }
+
+    if (this->encoder.held()) {
+        this->reversed = !this->reversed;
+        this->encoder.setEncReverse(reversed);
+    }
 }
 
 void ENC::nothing()

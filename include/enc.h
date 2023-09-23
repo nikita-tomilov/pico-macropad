@@ -13,6 +13,7 @@ class ENC
     uint16_t codeLeft;
     uint16_t codeRight;
     uint16_t codePress;
+    bool reversed = false;
 
 public:
     ENC(int a, int b, int button);
