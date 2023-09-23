@@ -8,13 +8,11 @@
 class KEY
 {
     EncButton2<EB_BTN> button;
-    LED* led;
-    char key;
+    char* key;
 
 public:
     KEY(int pin);
-    KEY(int pin, LED* led);
-    KEY(int pin, LED* led, char key);
+    KEY(int pin, char* key);
 
     void tick();
 

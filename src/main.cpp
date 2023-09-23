@@ -4,10 +4,10 @@
 #include "enc.h"
 #include "keymap.h"
 // A, B, button
-ENC enc1(26, 27, 28, true, O_KEY_VOLUME_DECREMENT, O_KEY_VOLUME_INCREMENT, O_KEY_PLAY_PAUSE);
-ENC enc2(20, 21, 22, false, O_KEY_UP_ARROW, O_KEY_DOWN_ARROW, O_KEY_RETURN);
-ENC enc3(18, 17, 19);
-ENC enc4(15, 14, 16);
+ENC enc1(26, 27, 28, CONSUMER, O_KEY_VOLUME_DECREMENT, O_KEY_VOLUME_INCREMENT, O_KEY_PLAY_PAUSE);
+ENC enc2(20, 21, 22, NORMAL, O_KEY_LEFT_ARROW, O_KEY_RIGHT_ARROW, O_KEY_RETURN);
+ENC enc3(18, 17, 19, NORMAL, ',', '.', O_KEY_RETURN);
+ENC enc4(15, 14, 16, NORMAL, '-', '+', O_KEY_RETURN);
 
 #include "led.h"
 LED red(5, 1023);
@@ -18,51 +18,52 @@ LED white(1, 1023);
 std::vector<LED> allLeds = {red, green, yellow, blue, white};
 
 #include "key.h"
+#include "keylayers.h"
 // clang-format off
-KEY k1(4, &red,   '1');    KEY k2(2, &green, '2');  KEY k5(0, &white, '5');  KEY k6(6, &white, '6');
-KEY k3(10, &blue, '3');    KEY k4(8, &yellow,'4');  KEY k7(12, &white,'7');  KEY k8(7, &white, '8');
-// clang-format on
+char cMap[8] = { '1', '2', '5', '6', 
+                 '3', '4', '7', '8'};
+KEY k1(4, &(cMap[0]));  KEY k2(2, &(cMap[1]));  KEY k5(0, &(cMap[2]));  KEY k6(6, &(cMap[3]));
+KEY k3(10, &(cMap[4])); KEY k4(8, &(cMap[5]));  KEY k7(12, &(cMap[6])); KEY k8(7, &(cMap[7]));
 std::vector<KEY> allKeys = {k1, k2, k3, k4, k5, k6, k7, k8};
+// clang-format on
 
 long lastKeyPressTimestamp = millis();
 double backlightBrightness = 100.0;
 
+int mode = 0;
+const int maxMode = 2;
+
+void changeMode(int newMode)
+{
+  mode = newMode;
+  Serial.print("Mode changed to ");
+  Serial.println(mode);
+
+  auto layer = keyLayers[mode];
+  for (int i = 0; i < 8; i++)
+  {
+    cMap[i] = layer[i];
+  }
+}
+
 void enc1leftH()
 {
-  /*mode -= 1;
-  if (mode < 0)
+  int newMode = mode - 1;
+  if (newMode < 0)
   {
-    mode = 0;
+    newMode = 0;
   }
-  Serial.println(mode);*/
+  changeMode(newMode);
 }
 
 void enc1rightH()
 {
-  /*mode += 1;
-  if (mode > 4)
+  int newMode = mode + 1;
+  if (newMode > maxMode)
   {
-    mode = 4;
+    newMode = maxMode;
   }
-  Serial.println(mode);*/
-}
-
-void enc3click()
-{
-  Serial.println("Press 3");
-  keyPress(O_KEY_F19);
-}
-
-void enc3left()
-{
-  Serial.println("Left 3 ");
-  keyPress(O_KEY_F17);
-}
-
-void enc3right()
-{
-  Serial.println("Right 3");
-  keyPress(O_KEY_F18);
+  changeMode(newMode);
 }
 
 void setup(void)
@@ -80,17 +81,10 @@ void setup(void)
   enc1.leftH = [&]
   { enc1leftH(); };
 
-  enc3.click = [&]
-  { enc3click(); };
-
-  enc3.left = [&]
-  { enc3left(); };
-
-  enc3.right = [&]
-  { enc3right(); };
+  mode = 0;
 }
 
-void loop()
+void ledRoutine()
 {
   if (millis() - lastKeyPressTimestamp < 10000)
   {
@@ -103,10 +97,34 @@ void loop()
       backlightBrightness -= 0.1;
     }
   }
-  for (auto &it : allLeds)
+  if (mode == 0)
   {
-    // it.set(backlightBrightness);
+    for (auto &it : allLeds)
+    {
+      it.set(backlightBrightness);
+    }
   }
+  else if (mode == 1)
+  {
+    red.set(0);
+    yellow.set(0);
+    green.set(0);
+    blue.set(0);
+    white.set(backlightBrightness);
+  }
+  else if (mode == 2)
+  {
+    red.set(backlightBrightness);
+    yellow.set(backlightBrightness);
+    green.set(backlightBrightness);
+    blue.set(backlightBrightness);
+    white.set(0);
+  }
+}
+
+void loop()
+{
+  ledRoutine();
 
   enc1.tick();
   enc2.tick();

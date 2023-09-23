@@ -16,14 +16,14 @@ ENC::ENC(int a, int b, int button)
     { this->nothing(); };
 }
 
-ENC::ENC(int a, int b, int button, bool isConsumerCode, uint16_t left, uint16_t right, uint16_t press)
+ENC::ENC(int a, int b, int button, int type, uint16_t left, uint16_t right, uint16_t press)
 {
     this->encoder = EncButton2<EB_ENCBTN>(INPUT_PULLUP, a, b, button);
     this->codeLeft = left;
     this->codeRight = right;
     this->codePress = press;
 
-    if (isConsumerCode)
+    if (type == CONSUMER)
     {
         this->click = [&]
         {
@@ -37,7 +37,9 @@ ENC::ENC(int a, int b, int button, bool isConsumerCode, uint16_t left, uint16_t 
         {
             consumerKeyPress(this->codeRight);
         };
-    } else {
+    }
+    else if (type == NORMAL)
+    {
         this->click = [&]
         {
             keyPress(this->codePress);
