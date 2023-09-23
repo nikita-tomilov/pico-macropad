@@ -9,6 +9,7 @@ void keyDown(uint8_t keycode)
 {
     keyPressDetected();
     Keyboard.press(keycode);
+    Serial.println(keycode);
 }
 
 void keyUp(uint8_t keycode)

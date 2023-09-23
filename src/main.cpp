@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include <EncButton2.h>
 #include "enc.h"
 ENC enc1(26, 27, 28); // A, B, button
 ENC enc2(20, 21, 22);
 ENC enc3(18, 17, 19);
 ENC enc4(15, 14, 16);
+std::vector<ENC> allEncs = {enc1, enc2, enc4, enc4};
 
 #include "led.h"
 LED red(5, 1023);
@@ -16,8 +16,14 @@ LED yellow(9, 1023);
 LED blue(11, 768);
 LED white(1, 1023);
 
-#include "keymap.h"
+#include "key.h"
+// clang-format off
+KEY k1(4, &red,   '1');    KEY k2(2, &green, '2');  KEY k5(0, &white, '5');  KEY k6(6, &white, '6');
+KEY k3(10, &blue, '3');    KEY k4(8, &yellow,'4');  KEY k7(12, &white,'7');  KEY k8(7, &white, '8');
+// clang-format on
+std::vector<KEY> allKeys = {k1, k2, k3, k4, k5, k6, k7, k8};
 
+#include "keymap.h"
 long lastKeyPressTimestamp = millis();
 double backlightBrightness = 100.0;
 
@@ -102,7 +108,7 @@ void setup(void)
   analogWriteFreq(1000);
   analogWriteRange(1024);
 
-  white.on();
+  // white.on();
 
   enc1.click = [&]
   { enc1click(); };
@@ -164,10 +170,14 @@ void loop()
     }
   }
 
-  enc1.tick();
-  enc2.tick();
-  enc3.tick();
-  enc4.tick();
+  for (auto &it : allEncs)
+  {
+    it.tick();
+  }
+  for (auto &it : allKeys)
+  {
+    it.tick();
+  }
 
-  delay(2);
+  delay(1);
 }
