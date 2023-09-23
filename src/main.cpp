@@ -1,13 +1,13 @@
 #include <Arduino.h>
-
 #include <vector>
 
 #include "enc.h"
-ENC enc1(26, 27, 28); // A, B, button
-ENC enc2(20, 21, 22);
+#include "keymap.h"
+// A, B, button
+ENC enc1(26, 27, 28, true, O_KEY_VOLUME_DECREMENT, O_KEY_VOLUME_INCREMENT, O_KEY_PLAY_PAUSE);
+ENC enc2(20, 21, 22, false, O_KEY_UP_ARROW, O_KEY_DOWN_ARROW, O_KEY_RETURN);
 ENC enc3(18, 17, 19);
 ENC enc4(15, 14, 16);
-std::vector<ENC> allEncs = {enc1, enc2, enc4, enc4};
 
 #include "led.h"
 LED red(5, 1023);
@@ -15,6 +15,7 @@ LED green(3, 768);
 LED yellow(9, 1023);
 LED blue(11, 768);
 LED white(1, 1023);
+std::vector<LED> allLeds = {red, green, yellow, blue, white};
 
 #include "key.h"
 // clang-format off
@@ -23,27 +24,8 @@ KEY k3(10, &blue, '3');    KEY k4(8, &yellow,'4');  KEY k7(12, &white,'7');  KEY
 // clang-format on
 std::vector<KEY> allKeys = {k1, k2, k3, k4, k5, k6, k7, k8};
 
-#include "keymap.h"
 long lastKeyPressTimestamp = millis();
 double backlightBrightness = 100.0;
-
-void enc1click()
-{
-  Serial.println("Press 1");
-  consumerKeyPress(O_KEY_PLAY_PAUSE);
-}
-
-void enc1left()
-{
-  Serial.println("Left 1 ");
-  consumerKeyPress(O_KEY_VOLUME_DECREMENT);
-}
-
-void enc1right()
-{
-  Serial.println("Right 1");
-  consumerKeyPress(O_KEY_VOLUME_INCREMENT);
-}
 
 void enc1leftH()
 {
@@ -63,24 +45,6 @@ void enc1rightH()
     mode = 4;
   }
   Serial.println(mode);*/
-}
-
-void enc2click()
-{
-  Serial.println("Press 2");
-  keyPress(O_KEY_RETURN);
-}
-
-void enc2left()
-{
-  Serial.println("Left 2 ");
-  keyPress(O_KEY_UP_ARROW);
-}
-
-void enc2right()
-{
-  Serial.println("Right 2");
-  keyPress(O_KEY_DOWN_ARROW);
 }
 
 void enc3click()
@@ -110,29 +74,11 @@ void setup(void)
 
   // white.on();
 
-  enc1.click = [&]
-  { enc1click(); };
-
-  enc1.left = [&]
-  { enc1left(); };
-
-  enc1.leftH = [&]
-  { enc1leftH(); };
-
-  enc1.right = [&]
-  { enc1right(); };
-
   enc1.rightH = [&]
   { enc1rightH(); };
 
-  enc2.click = [&]
-  { enc2click(); };
-
-  enc2.left = [&]
-  { enc2left(); };
-
-  enc2.right = [&]
-  { enc2right(); };
+  enc1.leftH = [&]
+  { enc1leftH(); };
 
   enc3.click = [&]
   { enc3click(); };
@@ -142,22 +88,10 @@ void setup(void)
 
   enc3.right = [&]
   { enc3right(); };
-
-  enc4.click = [&]
-  { enc1click(); };
-
-  enc4.left = [&]
-  { enc1left(); };
-
-  enc4.right = [&]
-  { enc1right(); };
-
-  delay(2000);
 }
 
 void loop()
 {
-
   if (millis() - lastKeyPressTimestamp < 10000)
   {
     backlightBrightness = 100;
@@ -169,11 +103,16 @@ void loop()
       backlightBrightness -= 0.1;
     }
   }
-
-  for (auto &it : allEncs)
+  for (auto &it : allLeds)
   {
-    it.tick();
+    // it.set(backlightBrightness);
   }
+
+  enc1.tick();
+  enc2.tick();
+  enc3.tick();
+  enc4.tick();
+
   for (auto &it : allKeys)
   {
     it.tick();

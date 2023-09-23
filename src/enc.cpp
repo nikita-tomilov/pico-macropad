@@ -1,4 +1,5 @@
 #include "enc.h"
+#include "keymap.h"
 
 ENC::ENC(int a, int b, int button)
 {
@@ -13,6 +14,43 @@ ENC::ENC(int a, int b, int button)
     { this->nothing(); };
     this->rightH = [&]
     { this->nothing(); };
+}
+
+ENC::ENC(int a, int b, int button, bool isConsumerCode, uint16_t left, uint16_t right, uint16_t press)
+{
+    this->encoder = EncButton2<EB_ENCBTN>(INPUT_PULLUP, a, b, button);
+    this->codeLeft = left;
+    this->codeRight = right;
+    this->codePress = press;
+
+    if (isConsumerCode)
+    {
+        this->click = [&]
+        {
+            consumerKeyPress(this->codePress);
+        };
+        this->left = [&]
+        {
+            consumerKeyPress(this->codeLeft);
+        };
+        this->right = [&]
+        {
+            consumerKeyPress(this->codeRight);
+        };
+    } else {
+        this->click = [&]
+        {
+            keyPress(this->codePress);
+        };
+        this->left = [&]
+        {
+            keyPress(this->codeLeft);
+        };
+        this->right = [&]
+        {
+            keyPress(this->codeRight);
+        };
+    }
 }
 
 void ENC::tick()

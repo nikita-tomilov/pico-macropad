@@ -7,9 +7,13 @@
 class ENC
 {
     EncButton2<EB_ENCBTN> encoder;
+    uint16_t codeLeft;
+    uint16_t codeRight;
+    uint16_t codePress;
 
 public:
     ENC(int a, int b, int button);
+    ENC(int a, int b, int button, bool isConsumerCode, uint16_t left, uint16_t right, uint16_t press);
 
     void tick();
 
