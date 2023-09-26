@@ -1,14 +1,6 @@
 #include <Arduino.h>
 #include <vector>
 
-#include "enc.h"
-#include "keymap.h"
-// A, B, button
-ENC enc1(26, 27, 28, CONSUMER, O_KEY_VOLUME_DECREMENT, O_KEY_VOLUME_INCREMENT, O_KEY_PLAY_PAUSE);
-ENC enc2(20, 21, 22, NORMAL, O_KEY_LEFT_ARROW, O_KEY_RIGHT_ARROW, O_KEY_RETURN);
-ENC enc3(18, 17, 19, NORMAL, ',', '.', O_KEY_RETURN);
-ENC enc4(15, 14, 16, NORMAL, '-', '+', O_KEY_RETURN);
-
 #include "led.h"
 LED red(5, 1023);
 LED green(3, 768);
@@ -19,19 +11,28 @@ std::vector<LED> allLeds = {red, green, yellow, blue, white};
 
 #include "key.h"
 #include "keylayers.h"
+#include "enc.h"
+#include "keymap.h"
 // clang-format off
 char cMap[8] = { '1', '2', '5', '6', 
                  '3', '4', '7', '8'};
 KEY k1(4, &(cMap[0]));  KEY k2(2, &(cMap[1]));  KEY k5(0, &(cMap[2]));  KEY k6(6, &(cMap[3]));
 KEY k3(10, &(cMap[4])); KEY k4(8, &(cMap[5]));  KEY k7(12, &(cMap[6])); KEY k8(7, &(cMap[7]));
 std::vector<KEY> allKeys = {k1, k2, k3, k4, k5, k6, k7, k8};
+
+// A, B, button
+uint16_t encLayer[16];
+ENC enc1(26, 27, 28, &(encLayer[0]));
+ENC enc2(20, 21, 22, &(encLayer[4]));
+ENC enc3(18, 17, 19, &(encLayer[8]));
+ENC enc4(15, 14, 16, &(encLayer[12]));
+
 // clang-format on
 
 long lastKeyPressTimestamp = millis();
 double backlightBrightness = 100.0;
 
 int mode = 0;
-const int maxMode = 2;
 
 void changeMode(int newMode)
 {
@@ -39,10 +40,16 @@ void changeMode(int newMode)
   Serial.print("Mode changed to ");
   Serial.println(mode);
 
-  auto layer = keyLayers[mode];
+  auto kl = keyLayers[mode];
   for (int i = 0; i < 8; i++)
   {
-    cMap[i] = layer[i];
+    cMap[i] = kl[i];
+  }
+
+  auto el = encLayers[mode];
+  for (int i = 0; i < 16; i++)
+  {
+    encLayer[i] = el[i];
   }
 }
 
@@ -59,9 +66,9 @@ void enc1leftH()
 void enc1rightH()
 {
   int newMode = mode + 1;
-  if (newMode > maxMode)
+  if (newMode > MAX_LAYER_INDEX)
   {
-    newMode = maxMode;
+    newMode = MAX_LAYER_INDEX;
   }
   changeMode(newMode);
 }
@@ -69,6 +76,7 @@ void enc1rightH()
 void setup(void)
 {
   Serial.begin(115200);
+  changeMode(0);
 
   analogWriteFreq(1000);
   analogWriteRange(1024);
@@ -80,8 +88,6 @@ void setup(void)
 
   enc1.leftH = [&]
   { enc1leftH(); };
-
-  mode = 0;
 }
 
 void ledRoutine()

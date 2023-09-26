@@ -4,20 +4,15 @@
 #include <functional>
 #include <EncButton2.h>
 
-#define CONSUMER  1
-#define NORMAL    2
-
 class ENC
 {
     EncButton2<EB_ENCBTN> encoder;
-    uint16_t codeLeft;
-    uint16_t codeRight;
-    uint16_t codePress;
+    uint16_t* specifier;
     bool reversed = false;
 
 public:
     ENC(int a, int b, int button);
-    ENC(int a, int b, int button, int type, uint16_t left, uint16_t right, uint16_t press);
+    ENC(int a, int b, int button, uint16_t* specifier);
 
     void tick();
 

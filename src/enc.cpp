@@ -16,43 +16,51 @@ ENC::ENC(int a, int b, int button)
     { this->nothing(); };
 }
 
-ENC::ENC(int a, int b, int button, int type, uint16_t left, uint16_t right, uint16_t press)
+ENC::ENC(int a, int b, int button, uint16_t *specifier)
 {
     this->encoder = EncButton2<EB_ENCBTN>(INPUT_PULLUP, a, b, button);
-    this->codeLeft = left;
-    this->codeRight = right;
-    this->codePress = press;
+    this->specifier = specifier;
 
-    if (type == CONSUMER)
+    this->click = [&]
     {
-        this->click = [&]
+        int type = this->specifier[0];
+        uint16_t code = this->specifier[3];
+        if (type == CONSUMER)
         {
-            consumerKeyPress(this->codePress);
-        };
-        this->left = [&]
+            consumerKeyPress(code);
+        }
+        else
         {
-            consumerKeyPress(this->codeLeft);
-        };
-        this->right = [&]
-        {
-            consumerKeyPress(this->codeRight);
-        };
-    }
-    else if (type == NORMAL)
+            keyPress(code);
+        }
+    };
+
+    this->left = [&]
     {
-        this->click = [&]
+        int type = this->specifier[0];
+        uint16_t code = this->specifier[1];
+        if (type == CONSUMER)
         {
-            keyPress(this->codePress);
-        };
-        this->left = [&]
+            consumerKeyPress(code);
+        }
+        else
         {
-            keyPress(this->codeLeft);
-        };
-        this->right = [&]
+            keyPress(code);
+        }
+    };
+    this->right = [&]
+    {
+        int type = this->specifier[0];
+        uint16_t code = this->specifier[2];
+        if (type == CONSUMER)
         {
-            keyPress(this->codeRight);
-        };
-    }
+            consumerKeyPress(code);
+        }
+        else
+        {
+            keyPress(code);
+        }
+    };
 }
 
 void ENC::tick()
@@ -89,7 +97,8 @@ void ENC::tick()
         this->right();
     }
 
-    if (this->encoder.held()) {
+    if (this->encoder.held())
+    {
         this->reversed = !this->reversed;
         this->encoder.setEncReverse(reversed);
     }
