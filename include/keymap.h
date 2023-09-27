@@ -32,7 +32,7 @@ void consumerKeyPress(uint16_t keycode);
 #define O_KEY_F13 KEY_F13
 #define O_KEY_F14 KEY_F14
 #define O_KEY_F15 KEY_F15
-#define O_KEY_F16 KEY_F16
+#define O_KEY_F16 KEY_KP_DOT // windows 10
 #define O_KEY_F17 KEY_F17
 #define O_KEY_F18 KEY_F18
 #define O_KEY_F19 KEY_F19
