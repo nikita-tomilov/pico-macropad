@@ -8,8 +8,8 @@
 // clang-format off
 char keyLayer0[8] = { O_KEY_SHIFT, '2', '5', '6', 
                       '3', '4', '7', '8'};
-char keyLayer1[8] = { O_KEY_SHIFT, 'b', 'c', 'd', 
-                      'e', 'f', 'g', 'h'};
+char keyLayer1[8] = { O_KEY_RETURN,     O_KEY_DELETE,      '5', '6', 
+                      O_KEY_LEFT_ARROW, O_KEY_RIGHT_ARROW, O_KEY_SHIFT, '0'};
 char* keyLayers[] = { keyLayer0, keyLayer1 };
 // clang-format on
 

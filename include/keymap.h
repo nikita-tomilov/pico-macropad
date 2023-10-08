@@ -28,6 +28,7 @@ void consumerKeyPress(uint16_t keycode);
 #define O_KEY_DOWN_ARROW KEY_DOWN_ARROW
 #define O_KEY_LEFT_ARROW KEY_LEFT_ARROW
 #define O_KEY_RIGHT_ARROW KEY_RIGHT_ARROW
+#define O_KEY_DELETE KEY_DELETE
 
 #define O_KEY_F13 KEY_F13
 #define O_KEY_F14 KEY_F14
