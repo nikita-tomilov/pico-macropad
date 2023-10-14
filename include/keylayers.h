@@ -6,9 +6,9 @@
 #define MAX_LAYER_INDEX (MAX_LAYERS-1)
 
 // clang-format off
-char keyLayer0[8] = { O_KEY_SHIFT, '2', '5', '6', 
-                      '3', '4', '7', '8'};
-char keyLayer1[8] = { O_KEY_RETURN,     O_KEY_DELETE,      '5', '6', 
+char keyLayer0[8] = { O_KEY_SHIFT, O_KEY_F13, O_KEY_F14, O_KEY_F15, 
+                      O_KEY_F17,   O_KEY_F18, O_KEY_F19, O_KEY_F20};
+char keyLayer1[8] = { 'r',             'w',                '5',         '6', 
                       O_KEY_LEFT_ARROW, O_KEY_RIGHT_ARROW, O_KEY_SHIFT, '0'};
 char* keyLayers[] = { keyLayer0, keyLayer1 };
 // clang-format on
