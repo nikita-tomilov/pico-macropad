@@ -12,6 +12,8 @@ std::vector<LED> allLeds = {red, green, yellow, blue, white};
 #include "usbkbd.h"
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
 
+Adafruit_USBD_MIDI usb_midi;
+
 #include "key.h"
 #include "keylayers.h"
 #include "enc.h"
@@ -74,11 +76,16 @@ void enc1rightH()
     newMode = MAX_LAYER_INDEX;
   }
   changeMode(newMode);
+
+  uint8_t event[] = {0x0B, 0xB0 | 0x00, 31, 0x05};
+  usb_midi.writePacket(event);
+  usb_midi.flush();
 }
 
 void usb_setup()
 {
   usb_hid.begin();
+  usb_midi.begin();
   Serial.begin(115200);
   while (!TinyUSBDevice.mounted())
   {
@@ -153,6 +160,31 @@ void loop()
   for (auto &it : allKeys)
   {
     it.tick();
+  }
+
+  uint8_t packet[4];
+  if (usb_midi.readPacket(packet))
+  {
+    Serial.println("====");
+    Serial.println(packet[0], HEX);
+    Serial.println(packet[1], HEX);
+    Serial.println(packet[2], HEX);
+    Serial.println(packet[3], HEX);
+    Serial.println("====");
+
+    if (packet[0] = 0x0B)
+    {
+      if (packet[1] = 0xB0)
+      {
+        if (packet[2] = 0x1F)
+        {
+          if (packet[3] != 0x40)
+          {
+            Serial.println("!");
+          }
+        }
+      }
+    }
   }
 
   delay(1);
