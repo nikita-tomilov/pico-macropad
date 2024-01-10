@@ -9,10 +9,13 @@ LED blue(11, 768);
 LED white(1, 1023);
 std::vector<LED> allLeds = {red, green, yellow, blue, white};
 
+#include "usbkbd.h"
+Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
+
 #include "key.h"
 #include "keylayers.h"
 #include "enc.h"
-#include "keymap.h"
+
 // clang-format off
 char cMap[8] = { '1', '2', '5', '6', 
                  '3', '4', '7', '8'};
@@ -73,9 +76,19 @@ void enc1rightH()
   changeMode(newMode);
 }
 
+void usb_setup()
+{
+  usb_hid.begin();
+  Serial.begin(115200);
+  while (!TinyUSBDevice.mounted())
+  {
+    delay(1);
+  }
+}
+
 void setup(void)
 {
-  Serial.begin(115200);
+  usb_setup();
   changeMode(0);
 
   analogWriteFreq(1000);

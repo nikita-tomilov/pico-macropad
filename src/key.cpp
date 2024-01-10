@@ -1,5 +1,5 @@
 #include "key.h"
-#include "keymap.h"
+#include "usbkbd.h"
 
 KEY::KEY(int pin)
 {

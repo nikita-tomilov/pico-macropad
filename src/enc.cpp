@@ -1,5 +1,5 @@
 #include "enc.h"
-#include "keymap.h"
+#include "usbkbd.h"
 
 ENC::ENC(int a, int b, int button)
 {
