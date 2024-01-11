@@ -7,7 +7,7 @@ LED green(3, 768);
 LED yellow(9, 1023);
 LED blue(11, 768);
 LED white(1, 1023);
-std::vector<LED> allLeds = {red, green, yellow, blue, white};
+std::vector<LED> allLeds = { red, green, yellow, blue, white };
 
 #include "usbkbd.hpp"
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
@@ -39,62 +39,52 @@ double backlightBrightness = 100.0;
 
 int mode = 0;
 
-void changeMode(int newMode)
-{
+void changeMode(int newMode) {
   mode = newMode;
   Serial.print("Mode changed to ");
   Serial.println(mode);
 
   auto kl = keyLayers[mode];
-  for (int i = 0; i < 8; i++)
-  {
+  for (int i = 0; i < 8; i++) {
     cMap[i] = kl[i];
   }
 
   auto el = encLayers[mode];
-  for (int i = 0; i < 16; i++)
-  {
+  for (int i = 0; i < 16; i++) {
     encLayer[i] = el[i];
   }
 }
 
-void enc1leftH()
-{
+void enc1leftH() {
   int newMode = mode - 1;
-  if (newMode < 0)
-  {
+  if (newMode < 0) {
     newMode = 0;
   }
   changeMode(newMode);
 }
 
-void enc1rightH()
-{
+void enc1rightH() {
   int newMode = mode + 1;
-  if (newMode > MAX_LAYER_INDEX)
-  {
+  if (newMode > MAX_LAYER_INDEX) {
     newMode = MAX_LAYER_INDEX;
   }
   changeMode(newMode);
 
-  uint8_t event[] = {0x0B, 0xB0 | 0x00, 31, 0x05};
+  uint8_t event[] = { 0x0B, 0xB0 | 0x00, 31, 0x05 };
   usb_midi.writePacket(event);
   usb_midi.flush();
 }
 
-void usb_setup()
-{
+void usb_setup() {
   usb_hid.begin();
   usb_midi.begin();
   Serial.begin(115200);
-  while (!TinyUSBDevice.mounted())
-  {
+  while (!TinyUSBDevice.mounted()) {
     delay(1);
   }
 }
 
-void setup(void)
-{
+void setup(void) {
   usb_setup();
   changeMode(0);
 
@@ -103,43 +93,34 @@ void setup(void)
 
   // white.on();
 
-  enc1.rightH = [&]
-  { enc1rightH(); };
+  enc1.rightH = [&] {
+    enc1rightH();
+  };
 
-  enc1.leftH = [&]
-  { enc1leftH(); };
+  enc1.leftH = [&] {
+    enc1leftH();
+  };
 }
 
-void ledRoutine()
-{
-  if (millis() - lastKeyPressTimestamp < 10000)
-  {
+void ledRoutine() {
+  if (millis() - lastKeyPressTimestamp < 10000) {
     backlightBrightness = 100;
-  }
-  else
-  {
-    if (backlightBrightness > 0)
-    {
+  } else {
+    if (backlightBrightness > 0) {
       backlightBrightness -= 0.1;
     }
   }
-  if (mode == 0)
-  {
-    for (auto &it : allLeds)
-    {
+  if (mode == 0) {
+    for (auto &it : allLeds) {
       it.set(backlightBrightness);
     }
-  }
-  else if (mode == 1)
-  {
+  } else if (mode == 1) {
     red.set(0);
     yellow.set(0);
     green.set(0);
     blue.set(0);
     white.set(backlightBrightness);
-  }
-  else if (mode == 2)
-  {
+  } else if (mode == 2) {
     red.set(backlightBrightness);
     yellow.set(backlightBrightness);
     green.set(backlightBrightness);
@@ -148,8 +129,7 @@ void ledRoutine()
   }
 }
 
-void loop()
-{
+void loop() {
   ledRoutine();
 
   enc1.tick();
@@ -157,14 +137,12 @@ void loop()
   enc3.tick();
   enc4.tick();
 
-  for (auto &it : allKeys)
-  {
+  for (auto &it : allKeys) {
     it.tick();
   }
 
   uint8_t packet[4];
-  if (usb_midi.readPacket(packet))
-  {
+  if (usb_midi.readPacket(packet)) {
     Serial.println("====");
     Serial.println(packet[0], HEX);
     Serial.println(packet[1], HEX);
@@ -172,14 +150,10 @@ void loop()
     Serial.println(packet[3], HEX);
     Serial.println("====");
 
-    if (packet[0] = 0x0B)
-    {
-      if (packet[1] = 0xB0)
-      {
-        if (packet[2] = 0x1F)
-        {
-          if (packet[3] != 0x40)
-          {
+    if (packet[0] = 0x0B) {
+      if (packet[1] = 0xB0) {
+        if (packet[2] = 0x1F) {
+          if (packet[3] != 0x40) {
             Serial.println("!");
           }
         }
