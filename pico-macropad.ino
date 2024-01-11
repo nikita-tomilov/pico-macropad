@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <MIDI.h>
 #include <vector>
 
 #include "led.hpp"
@@ -13,6 +14,7 @@ std::vector<LED> allLeds = { red, green, yellow, blue, white };
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
 
 Adafruit_USBD_MIDI usb_midi;
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
 
 #include "key.hpp"
 #include "keylayers.h"
@@ -69,15 +71,38 @@ void enc1rightH() {
     newMode = MAX_LAYER_INDEX;
   }
   changeMode(newMode);
+}
 
-  uint8_t event[] = { 0x0B, 0xB0 | 0x00, 31, 0x05 };
-  usb_midi.writePacket(event);
+
+volatile byte midiVal = 64;
+void changeMidiVal(byte newVal) {
+  midiVal = newVal;
+  MIDI.sendControlChange(31, newVal, 1);
   usb_midi.flush();
+}
+void controlMessageReceived(byte channel, byte controlNumber, byte value) {
+  if (channel == 1) {
+    if (controlNumber == 31) {
+      if (value != midiVal) {
+        changeMidiVal(value);
+      }
+    }
+  }
+}
+void enc2leftH() {
+  if (midiVal > 0) midiVal = midiVal - 1;
+  changeMidiVal(midiVal);
+}
+
+void enc2rightH() {
+  if (midiVal < 127) midiVal = midiVal + 1;
+  changeMidiVal(midiVal);
 }
 
 void usb_setup() {
   usb_hid.begin();
-  usb_midi.begin();
+  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.setHandleControlChange(controlMessageReceived);
   Serial.begin(115200);
   while (!TinyUSBDevice.mounted()) {
     delay(1);
@@ -99,6 +124,13 @@ void setup(void) {
 
   enc1.leftH = [&] {
     enc1leftH();
+  };
+  enc2.rightH = [&] {
+    enc2rightH();
+  };
+
+  enc2.leftH = [&] {
+    enc2leftH();
   };
 }
 
@@ -129,6 +161,7 @@ void ledRoutine() {
   }
 }
 
+
 void loop() {
   ledRoutine();
 
@@ -137,28 +170,10 @@ void loop() {
   enc3.tick();
   enc4.tick();
 
+  MIDI.read();
+
   for (auto &it : allKeys) {
     it.tick();
-  }
-
-  uint8_t packet[4];
-  if (usb_midi.readPacket(packet)) {
-    Serial.println("====");
-    Serial.println(packet[0], HEX);
-    Serial.println(packet[1], HEX);
-    Serial.println(packet[2], HEX);
-    Serial.println(packet[3], HEX);
-    Serial.println("====");
-
-    if (packet[0] = 0x0B) {
-      if (packet[1] = 0xB0) {
-        if (packet[2] = 0x1F) {
-          if (packet[3] != 0x40) {
-            Serial.println("!");
-          }
-        }
-      }
-    }
   }
 
   delay(1);
