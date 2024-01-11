@@ -1,7 +1,7 @@
 #ifndef CKEYLAYERS_H
 #define CKEYLAYERS_H
 
-#include "usbkbd.h"
+#include "usbkbd.hpp"
 
 #define MAX_LAYERS 2
 #define MAX_LAYER_INDEX (MAX_LAYERS-1)

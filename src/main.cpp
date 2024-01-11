@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <vector>
 
-#include "led.h"
+#include "led.hpp"
 LED red(5, 1023);
 LED green(3, 768);
 LED yellow(9, 1023);
@@ -9,14 +9,14 @@ LED blue(11, 768);
 LED white(1, 1023);
 std::vector<LED> allLeds = {red, green, yellow, blue, white};
 
-#include "usbkbd.h"
+#include "usbkbd.hpp"
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
 
 Adafruit_USBD_MIDI usb_midi;
 
-#include "key.h"
+#include "key.hpp"
 #include "keylayers.h"
-#include "enc.h"
+#include "enc.hpp"
 
 // clang-format off
 char cMap[8] = { '1', '2', '5', '6', 

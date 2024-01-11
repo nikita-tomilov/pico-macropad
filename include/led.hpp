@@ -1,5 +1,20 @@
-#include "led.h"
+#ifndef CLED_H
+#define CLED_H
+
 #include <Arduino.h>
+
+class LED
+{
+    int pin;
+    int maxBrighness;
+
+public:
+    LED(int pin, int maxBrighness);
+
+    void on();
+    void off();
+    void set(int percentage);
+};
 
 LED::LED(int pin, int maxBrighness)
 {
@@ -22,3 +37,5 @@ void LED::set(int percentage)
 {
     analogWrite(this->pin, maxBrighness * percentage / 100);
 }
+
+#endif

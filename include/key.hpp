@@ -1,5 +1,28 @@
-#include "key.h"
-#include "usbkbd.h"
+#ifndef CKEY_H
+#define CKEY_H
+
+#include <functional>
+#include "led.hpp"
+#include <EncButton2.h>
+#include "usbkbd.hpp"
+
+class KEY
+{
+    EncButton2<EB_BTN> button;
+    char* key;
+
+public:
+    KEY(int pin);
+    KEY(int pin, char* key);
+
+    void tick();
+
+    void nothing();
+
+    std::function<void()> keydown;
+    std::function<void()> keyup;
+};
+
 
 KEY::KEY(int pin)
 {
@@ -47,3 +70,5 @@ void KEY::tick()
 void KEY::nothing()
 {
 }
+
+#endif
