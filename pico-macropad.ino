@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <MIDI.h>
 #include <vector>
 
 #include "led.hpp"
@@ -14,7 +13,6 @@ std::vector<LED> allLeds = { red, green, yellow, blue, white };
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
 
 Adafruit_USBD_MIDI usb_midi;
-MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
 
 #include "key.hpp"
 #include "keylayers.h"
@@ -77,14 +75,31 @@ void enc1rightH() {
 volatile byte midiVal = 64;
 void changeMidiVal(byte newVal) {
   midiVal = newVal;
-  MIDI.sendControlChange(31, newVal, 1);
+ 
+  uint8_t event[] = {0x0B, 0xB0 | 0x00, 31, newVal};
+  usb_midi.writePacket(event);
   usb_midi.flush();
+
+  Serial.print("< ");
+  Serial.print(1);
+  Serial.print(" ");
+  Serial.print(31);
+  Serial.print(" ");
+  Serial.print(newVal);
+  Serial.println();
 }
 void controlMessageReceived(byte channel, byte controlNumber, byte value) {
+  Serial.print("> ");
+  Serial.print(channel);
+  Serial.print(" ");
+  Serial.print(controlNumber);
+  Serial.print(" ");
+  Serial.print(value);
+  Serial.println();
   if (channel == 1) {
     if (controlNumber == 31) {
-      if (value != midiVal) {
-        changeMidiVal(value);
+      if (midiVal != value) {
+       changeMidiVal(value);
       }
     }
   }
@@ -101,8 +116,7 @@ void enc2rightH() {
 
 void usb_setup() {
   usb_hid.begin();
-  MIDI.begin(MIDI_CHANNEL_OMNI);
-  MIDI.setHandleControlChange(controlMessageReceived);
+  usb_midi.begin();
   Serial.begin(115200);
   while (!TinyUSBDevice.mounted()) {
     delay(1);
@@ -170,7 +184,19 @@ void loop() {
   enc3.tick();
   enc4.tick();
 
-  MIDI.read();
+  uint8_t packet[4];
+  if (usb_midi.readPacket(packet)) {
+    Serial.println("====");
+    Serial.println(packet[0], HEX);
+    Serial.println(packet[1], HEX);
+    Serial.println(packet[2], HEX);
+    Serial.println(packet[3], HEX);
+    Serial.println("====");
+
+    if (packet[0] == 0x0B) {
+      controlMessageReceived(1, packet[2], packet[3]);
+    }
+  }
 
   for (auto &it : allKeys) {
     it.tick();
