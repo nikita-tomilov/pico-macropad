@@ -2,12 +2,12 @@
 #define CENC_H
 
 #include <functional>
-#include <EncButton2.h>
+#include <EncButton.h>
 #include "usbkbd.hpp"
 
 class ENC
 {
-    EncButton2<EB_ENCBTN> encoder;
+    EncButton encoder;
     uint16_t* specifier;
     bool reversed = false;
 
@@ -28,7 +28,7 @@ public:
 
 ENC::ENC(int a, int b, int button)
 {
-    this->encoder = EncButton2<EB_ENCBTN>(INPUT_PULLUP, a, b, button);
+    this->encoder = EncButton(a, b, button, INPUT_PULLUP, INPUT_PULLUP);
     this->click = [&]
     { this->nothing(); };
     this->left = [&]
@@ -43,7 +43,7 @@ ENC::ENC(int a, int b, int button)
 
 ENC::ENC(int a, int b, int button, uint16_t *specifier)
 {
-    this->encoder = EncButton2<EB_ENCBTN>(INPUT_PULLUP, a, b, button);
+    this->encoder = EncButton(a, b, button, INPUT_PULLUP, INPUT_PULLUP);
     this->specifier = specifier;
 
     this->click = [&]
@@ -122,7 +122,7 @@ void ENC::tick()
         this->right();
     }
 
-    if (this->encoder.held())
+    if (this->encoder.encHolding())
     {
         this->reversed = !this->reversed;
         this->encoder.setEncReverse(reversed);

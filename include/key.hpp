@@ -3,12 +3,12 @@
 
 #include <functional>
 #include "led.hpp"
-#include <EncButton2.h>
+#include <EncButton.h>
 #include "usbkbd.hpp"
 
 class KEY
 {
-    EncButton2<EB_BTN> button;
+    Button button;
     char* key;
 
 public:
@@ -26,7 +26,7 @@ public:
 
 KEY::KEY(int pin)
 {
-    this->button = EncButton2<EB_BTN>(INPUT_PULLUP, pin);
+    this->button = Button(pin, INPUT_PULLUP);
     this->key = NULL;
     this->keydown = [&]
     { this->nothing(); };
@@ -36,7 +36,7 @@ KEY::KEY(int pin)
 
 KEY::KEY(int pin, char *key)
 {
-    this->button = EncButton2<EB_BTN>(INPUT_PULLUP, pin);
+    this->button = Button(pin, INPUT_PULLUP);
     this->key = key;
     this->keydown = [&]
     {
