@@ -204,8 +204,10 @@ void ENC::midiChangedInternal(byte layerNumber) {
 void ENC::midiChangedExternal(byte midiControlNumber, byte value) {
   for (int i = 0; i < 2; i++) {
     if (midiControlNumbers[i] == midiControlNumber) {
-      midiValues[i] = value;
-      midiChangedInternal(i);
+      if (midiValues[i] != value) {
+        midiValues[i] = value;
+        midiChangedInternal(i);
+      }
     }
   }
 }
