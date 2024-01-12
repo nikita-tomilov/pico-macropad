@@ -11,7 +11,7 @@ std::vector<LED> allLeds = { red, green, yellow, blue, white };
 
 #include "usbkbd.hpp"
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
-
+#include "usbmidi.hpp"
 Adafruit_USBD_MIDI usb_midi;
 
 #include "key.hpp"
@@ -75,18 +75,7 @@ void enc1rightH() {
 volatile byte midiVal = 64;
 void changeMidiVal(byte newVal) {
   midiVal = newVal;
- 
-  uint8_t event[] = {0x0B, 0xB0 | 0x00, 31, newVal};
-  usb_midi.writePacket(event);
-  usb_midi.flush();
-
-  Serial.print("< ");
-  Serial.print(1);
-  Serial.print(" ");
-  Serial.print(31);
-  Serial.print(" ");
-  Serial.print(newVal);
-  Serial.println();
+  sendControlMessage(1, 31, midiVal);
 }
 void controlMessageReceived(byte channel, byte controlNumber, byte value) {
   Serial.print("> ");
@@ -114,7 +103,7 @@ void enc2rightH() {
   changeMidiVal(midiVal);
 }
 
-void usb_setup() {
+void usbSetup() {
   usb_hid.begin();
   usb_midi.begin();
   Serial.begin(115200);
@@ -124,7 +113,7 @@ void usb_setup() {
 }
 
 void setup(void) {
-  usb_setup();
+  usbSetup();
   changeMode(0);
 
   analogWriteFreq(1000);
@@ -178,25 +167,12 @@ void ledRoutine() {
 
 void loop() {
   ledRoutine();
+  midiRoutine();
 
   enc1.tick();
   enc2.tick();
   enc3.tick();
   enc4.tick();
-
-  uint8_t packet[4];
-  if (usb_midi.readPacket(packet)) {
-    Serial.println("====");
-    Serial.println(packet[0], HEX);
-    Serial.println(packet[1], HEX);
-    Serial.println(packet[2], HEX);
-    Serial.println(packet[3], HEX);
-    Serial.println("====");
-
-    if (packet[0] == 0x0B) {
-      controlMessageReceived(1, packet[2], packet[3]);
-    }
-  }
 
   for (auto &it : allKeys) {
     it.tick();
