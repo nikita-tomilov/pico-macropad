@@ -31,13 +31,37 @@ ENC enc1(26, 27, 28, &(encLayer[0]), 31, 35);
 ENC enc2(20, 21, 22, &(encLayer[4]), 32, 36);
 ENC enc3(18, 17, 19, &(encLayer[8]), 33, 37);
 ENC enc4(15, 14, 16, &(encLayer[12]),34, 38);
+std::vector<ENC> allEncoders = {enc1, enc2, enc3, enc4};
 
 // clang-format on
 
 long lastKeyPressTimestamp = millis();
+void actionPerformed() {
+  lastKeyPressTimestamp = millis();
+}
+
 double backlightBrightness = 100.0;
 
 int mode = 0;
+bool modifierPressed = false;
+
+void modifierKeyDown() {
+  Serial.println("modifier down");
+  modifierPressed = true;
+  enc1.upMidiLayer();
+  enc2.upMidiLayer();
+  enc3.upMidiLayer();
+  enc4.upMidiLayer();
+}
+
+void modifierKeyUp() {
+  Serial.println("modifier up");
+  modifierPressed = false;
+  enc1.downMidiLayer();
+  enc2.downMidiLayer();
+  enc3.downMidiLayer();
+  enc4.downMidiLayer();
+}
 
 void changeMode(int newMode) {
   mode = newMode;
@@ -52,6 +76,18 @@ void changeMode(int newMode) {
   auto el = encLayers[mode];
   for (int i = 0; i < 16; i++) {
     encLayer[i] = el[i];
+  }
+
+  for (auto &it : allKeys) {
+    if (it.isModifier() && (mode == 1)) {
+      // Serial.println("Changed key to MIDI mode");
+      it.keydown = [&]{ modifierKeyDown(); };
+      it.keyup   = [&]{ modifierKeyUp();   };
+    } else {
+      // Serial.println("Changed key to NORMAL mode");
+      it.keydown = it.defaultkeydown;
+      it.keyup = it.defaultkeyup;
+    }
   }
 }
 
@@ -78,29 +114,12 @@ void changeMidiVal(byte newVal) {
   sendControlMessage(1, 31, midiVal);
 }
 void controlMessageReceived(byte channel, byte controlNumber, byte value) {
-  Serial.print("> ");
-  Serial.print(channel);
-  Serial.print(" ");
-  Serial.print(controlNumber);
-  Serial.print(" ");
-  Serial.print(value);
-  Serial.println();
   if (channel == 1) {
-    if (controlNumber == 31) {
-      if (midiVal != value) {
-       changeMidiVal(value);
-      }
-    }
+    enc1.midiChangedExternal(controlNumber, value);
+    enc2.midiChangedExternal(controlNumber, value);
+    enc3.midiChangedExternal(controlNumber, value);
+    enc4.midiChangedExternal(controlNumber, value);
   }
-}
-void enc2leftH() {
-  if (midiVal > 0) midiVal = midiVal - 1;
-  changeMidiVal(midiVal);
-}
-
-void enc2rightH() {
-  if (midiVal < 127) midiVal = midiVal + 1;
-  changeMidiVal(midiVal);
 }
 
 void usbSetup() {
@@ -128,13 +147,6 @@ void setup(void) {
   enc1.leftH = [&] {
     enc1leftH();
   };
-  enc2.rightH = [&] {
-    enc2rightH();
-  };
-
-  enc2.leftH = [&] {
-    enc2leftH();
-  };
 }
 
 void ledRoutine() {
@@ -150,17 +162,19 @@ void ledRoutine() {
       it.set(backlightBrightness);
     }
   } else if (mode == 1) {
-    red.set(0);
-    yellow.set(0);
-    green.set(0);
-    blue.set(0);
-    white.set(backlightBrightness);
-  } else if (mode == 2) {
-    red.set(backlightBrightness);
-    yellow.set(backlightBrightness);
-    green.set(backlightBrightness);
-    blue.set(backlightBrightness);
-    white.set(0);
+    if (!modifierPressed) {
+      red.set(backlightBrightness);
+      yellow.set(backlightBrightness);
+      green.set(backlightBrightness);
+      blue.set(backlightBrightness);
+      white.set(0);
+    } else {
+      red.set(0);
+      yellow.set(0);
+      green.set(0);
+      blue.set(0);
+      white.set(backlightBrightness);
+    }
   }
 }
 

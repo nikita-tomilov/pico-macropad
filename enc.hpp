@@ -5,6 +5,9 @@
 #include <EncButton.h>
 #include "usbkbd.hpp"
 
+extern void sendControlMessage(byte channel, byte controlNumber, byte value);
+extern void actionPerformed();
+
 class ENC
 {
     EncButton encoder;
@@ -18,7 +21,7 @@ class ENC
     void midiDecrease();
     void midiIncrease();
     void midiDefault();
-    void midiChangedInternal();
+    void midiChangedInternal(byte layerNumber);
 
 public:
     ENC(int a, int b, int button, uint16_t* specifier, byte midiControlNumberPrimary, byte midiControlNumberSecondary);
@@ -29,6 +32,7 @@ public:
 
     void upMidiLayer();
     void downMidiLayer();
+    void midiChangedExternal(byte midiControlNumber, byte value);
 
     std::function<void()> click;
     std::function<void()> left;
@@ -105,31 +109,37 @@ void ENC::tick()
     if (this->encoder.click())
     {
         this->click();
+        actionPerformed();
     }
 
     if (this->encoder.left())
     {
         this->left();
+        actionPerformed();
     }
 
     if (this->encoder.leftH())
     {
         this->leftH();
+        actionPerformed();
     }
 
     if (this->encoder.right())
     {
         this->right();
+        actionPerformed();
     }
 
     if (this->encoder.rightH())
     {
         this->rightH();
+        actionPerformed();
     }
 
     if (this->encoder.right())
     {
         this->right();
+        actionPerformed();
     }
 
     if (this->encoder.hold())
@@ -138,17 +148,20 @@ void ENC::tick()
         this->encoder.setEncReverse(reversed);
         Serial.print("reversed on ");
         Serial.println(midiControlNumbers[0]);
+        actionPerformed();
     }
 }
 
 void ENC::upMidiLayer()
 {
   midiLayer = 1;
+  Serial.println("upMidiLayer");
 }
 
 void ENC::downMidiLayer()
 {
   midiLayer = 0;
+  Serial.println("downMidiLayer");
 }
 
 void ENC::midiDecrease()
@@ -158,7 +171,7 @@ void ENC::midiDecrease()
     curVal = curVal - 1;
   }
   midiValues[midiLayer] = curVal;
-  midiChangedInternal();
+  midiChangedInternal(midiLayer);
 }
 
 void ENC::midiIncrease()
@@ -168,22 +181,33 @@ void ENC::midiIncrease()
     curVal = curVal + 1;
   }
   midiValues[midiLayer] = curVal;
-  midiChangedInternal();
+  midiChangedInternal(midiLayer);
 }
 
 void ENC::midiDefault()
 {
   midiValues[midiLayer] = 64;
-  midiChangedInternal();
+  midiChangedInternal(midiLayer);
 }
 
-void ENC::midiChangedInternal() {
-  byte midiValue = midiValues[midiLayer];
-  byte midiControlNumber = midiControlNumbers[midiLayer];
+void ENC::midiChangedInternal(byte layerNumber) {
+  byte midiValue = midiValues[layerNumber];
+  byte midiControlNumber = midiControlNumbers[layerNumber];
   Serial.print("midi change on midiControlNumber ");
   Serial.print(midiControlNumber);
   Serial.print(" to value ");
   Serial.println(midiValue);
+
+  sendControlMessage(1, midiControlNumber, midiValue);
+}
+
+void ENC::midiChangedExternal(byte midiControlNumber, byte value) {
+  for (int i = 0; i < 2; i++) {
+    if (midiControlNumbers[i] == midiControlNumber) {
+      midiValues[i] = value;
+      midiChangedInternal(i);
+    }
+  }
 }
 
 void ENC::nothing()

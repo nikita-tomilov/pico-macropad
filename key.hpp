@@ -6,50 +6,51 @@
 #include <EncButton.h>
 #include "usbkbd.hpp"
 
+extern void actionPerformed();
+
 class KEY
 {
     Button button;
     char* key;
 
 public:
-    KEY(int pin);
     KEY(int pin, char* key);
 
     void tick();
 
     void nothing();
 
+    bool isModifier();
+
     std::function<void()> keydown;
     std::function<void()> keyup;
+
+    std::function<void()> defaultkeydown;
+    std::function<void()> defaultkeyup;
 };
-
-
-KEY::KEY(int pin)
-{
-    this->button = Button(pin, INPUT_PULLUP);
-    this->key = NULL;
-    this->keydown = [&]
-    { this->nothing(); };
-    this->keyup = [&]
-    { this->nothing(); };
-}
 
 KEY::KEY(int pin, char *key)
 {
     this->button = Button(pin, INPUT_PULLUP);
     this->key = key;
-    this->keydown = [&]
+    this->defaultkeydown = [&]
     {
         // this->led->on();
         char code = *(this->key);
-        keyDown(code);
+        if (code > 0x00) {
+          keyDown(code);
+        }
     };
-    this->keyup = [&]
+    this->defaultkeyup = [&]
     {
         // this->led->off();
         char code = *(this->key);
-        keyUp(code);
+        if (code > 0x00) {
+          keyUp(code);
+        }
     };
+    this->keydown = this->defaultkeydown;
+    this->keyup = this->defaultkeyup;
 }
 
 void KEY::tick()
@@ -58,17 +59,24 @@ void KEY::tick()
 
     if (this->button.press())
     {
+        actionPerformed();
         this->keydown();
     }
 
     if (this->button.release())
     {
+        actionPerformed();
         this->keyup();
     }
 }
 
 void KEY::nothing()
 {
+}
+
+bool KEY::isModifier() {
+  char code = *(this->key);
+  return (code == 0x00);
 }
 
 #endif

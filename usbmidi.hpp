@@ -4,6 +4,7 @@
 #define MIDI_DEBUG
 
 extern Adafruit_USBD_MIDI usb_midi;
+extern void actionPerformed();
 
 void controlMessageReceived(byte channel, byte controlNumber, byte value);
 
@@ -11,6 +12,7 @@ void sendControlMessage(byte channel, byte controlNumber, byte value) {
   uint8_t event[] = {0x0B, 0xB0 | (channel - 1), controlNumber, value};
   usb_midi.writePacket(event);
   usb_midi.flush();
+  actionPerformed();
 
   #ifdef MIDI_DEBUG
   Serial.print("> ");
@@ -28,6 +30,7 @@ void midiRoutine() {
   if (usb_midi.readPacket(packet)) {
 
     if (packet[0] == 0x0B) {
+      actionPerformed();
       controlMessageReceived(packet[1] + 1, packet[2], packet[3]);
     }
 

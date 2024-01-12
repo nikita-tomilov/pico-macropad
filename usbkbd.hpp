@@ -24,9 +24,6 @@ extern Adafruit_USBD_HID usb_hid;
 #define NORMAL    2
 #define MIDI      3
 
-extern long lastKeyPressTimestamp;
-extern double backlightBrightness;
-
 void keyDown(uint8_t keycode);
 void keyUp(uint8_t keycode);
 void keyPress(uint8_t keycode);
@@ -72,8 +69,6 @@ void consumerKeyPress(uint16_t keycode);
 
 void keyPressDetected()
 {
-    lastKeyPressTimestamp = millis();
-
     if (!usb_hid.ready())
         return;
 
