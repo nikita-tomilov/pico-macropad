@@ -11,13 +11,24 @@ class ENC
     uint16_t* specifier;
     bool reversed = false;
 
+    byte midiControlNumbers[2];
+    byte midiValues[2] = {64, 64};
+    byte midiLayer = 0;
+
+    void midiDecrease();
+    void midiIncrease();
+    void midiDefault();
+    void midiChangedInternal();
+
 public:
-    ENC(int a, int b, int button);
-    ENC(int a, int b, int button, uint16_t* specifier);
+    ENC(int a, int b, int button, uint16_t* specifier, byte midiControlNumberPrimary, byte midiControlNumberSecondary);
 
     void tick();
 
     void nothing();
+
+    void upMidiLayer();
+    void downMidiLayer();
 
     std::function<void()> click;
     std::function<void()> left;
@@ -26,24 +37,11 @@ public:
     std::function<void()> rightH;
 };
 
-ENC::ENC(int a, int b, int button)
+ENC::ENC(int a, int b, int button, uint16_t *specifier, byte midiControlNumberPrimary, byte midiControlNumberSecondary)
 {
     this->encoder = EncButton(a, b, button, INPUT_PULLUP, INPUT_PULLUP);
-    this->click = [&]
-    { this->nothing(); };
-    this->left = [&]
-    { this->nothing(); };
-    this->right = [&]
-    { this->nothing(); };
-    this->leftH = [&]
-    { this->nothing(); };
-    this->rightH = [&]
-    { this->nothing(); };
-}
-
-ENC::ENC(int a, int b, int button, uint16_t *specifier)
-{
-    this->encoder = EncButton(a, b, button, INPUT_PULLUP, INPUT_PULLUP);
+    this->midiControlNumbers[0] = midiControlNumberPrimary;
+    this->midiControlNumbers[1] = midiControlNumberSecondary;
     this->specifier = specifier;
 
     this->click = [&]
@@ -54,9 +52,13 @@ ENC::ENC(int a, int b, int button, uint16_t *specifier)
         {
             consumerKeyPress(code);
         }
-        else
+        else if (type == NORMAL)
         {
             keyPress(code);
+        }
+        else if (type == MIDI)
+        {
+            midiDefault();
         }
     };
 
@@ -68,9 +70,13 @@ ENC::ENC(int a, int b, int button, uint16_t *specifier)
         {
             consumerKeyPress(code);
         }
-        else
+        else if (type == NORMAL)
         {
             keyPress(code);
+        }
+        else if (type == MIDI)
+        {
+            midiDecrease();
         }
     };
     this->right = [&]
@@ -81,9 +87,13 @@ ENC::ENC(int a, int b, int button, uint16_t *specifier)
         {
             consumerKeyPress(code);
         }
-        else
+        else if (type == NORMAL)
         {
             keyPress(code);
+        }
+        else if (type == MIDI)
+        {
+            midiIncrease();
         }
     };
 }
@@ -122,11 +132,58 @@ void ENC::tick()
         this->right();
     }
 
-    if (this->encoder.encHolding())
+    if (this->encoder.hold())
     {
         this->reversed = !this->reversed;
         this->encoder.setEncReverse(reversed);
+        Serial.print("reversed on ");
+        Serial.println(midiControlNumbers[0]);
     }
+}
+
+void ENC::upMidiLayer()
+{
+  midiLayer = 1;
+}
+
+void ENC::downMidiLayer()
+{
+  midiLayer = 0;
+}
+
+void ENC::midiDecrease()
+{
+  byte curVal = midiValues[midiLayer];
+  if (curVal > 0) {
+    curVal = curVal - 1;
+  }
+  midiValues[midiLayer] = curVal;
+  midiChangedInternal();
+}
+
+void ENC::midiIncrease()
+{
+  byte curVal = midiValues[midiLayer];
+  if (curVal < 127) {
+    curVal = curVal + 1;
+  }
+  midiValues[midiLayer] = curVal;
+  midiChangedInternal();
+}
+
+void ENC::midiDefault()
+{
+  midiValues[midiLayer] = 64;
+  midiChangedInternal();
+}
+
+void ENC::midiChangedInternal() {
+  byte midiValue = midiValues[midiLayer];
+  byte midiControlNumber = midiControlNumbers[midiLayer];
+  Serial.print("midi change on midiControlNumber ");
+  Serial.print(midiControlNumber);
+  Serial.print(" to value ");
+  Serial.println(midiValue);
 }
 
 void ENC::nothing()

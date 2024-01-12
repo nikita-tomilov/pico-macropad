@@ -22,6 +22,7 @@ extern Adafruit_USBD_HID usb_hid;
 
 #define CONSUMER  1
 #define NORMAL    2
+#define MIDI      3
 
 extern long lastKeyPressTimestamp;
 extern double backlightBrightness;

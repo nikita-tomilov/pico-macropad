@@ -6,6 +6,8 @@
 #define MAX_LAYERS 2
 #define MAX_LAYER_INDEX (MAX_LAYERS-1)
 
+#define MAX_MIDI_LAYERS 2
+
 // clang-format off
 char keyLayer0[8] = { O_KEY_SHIFT, O_KEY_F13, O_KEY_F14, O_KEY_F15, 
                       O_KEY_F17,   O_KEY_F18, O_KEY_F19, O_KEY_F20};
@@ -22,10 +24,10 @@ uint16_t encLayer0[] = {
     NORMAL,   O_KEY_DOWN_ARROW,       O_KEY_UP_ARROW,         O_KEY_RETURN,
     CONSUMER, O_KEY_BACK,             O_KEY_FWD,              O_KEY_REFRESH };
 uint16_t encLayer1[] = {
-    NORMAL, O_KEY_F13, O_KEY_F14, O_KEY_F15,
-    NORMAL, O_KEY_F16, O_KEY_F17, O_KEY_F18,
-    NORMAL, O_KEY_F19, O_KEY_F20, O_KEY_F21,
-    NORMAL, O_KEY_F22, O_KEY_F23, O_KEY_F24, };
+    MIDI, 0, 0, 0,
+    MIDI, 0, 0, 0,
+    MIDI, 0, 0, 0,
+    MIDI, 0, 0, 0, };
 uint16_t* encLayers[] = { encLayer0, encLayer1 };
 // clang-format on
 

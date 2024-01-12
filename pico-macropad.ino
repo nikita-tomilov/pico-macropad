@@ -27,10 +27,10 @@ std::vector<KEY> allKeys = {k1, k2, k3, k4, k5, k6, k7, k8};
 
 // A, B, button
 uint16_t encLayer[16];
-ENC enc1(26, 27, 28, &(encLayer[0]));
-ENC enc2(20, 21, 22, &(encLayer[4]));
-ENC enc3(18, 17, 19, &(encLayer[8]));
-ENC enc4(15, 14, 16, &(encLayer[12]));
+ENC enc1(26, 27, 28, &(encLayer[0]), 31, 35);
+ENC enc2(20, 21, 22, &(encLayer[4]), 32, 36);
+ENC enc3(18, 17, 19, &(encLayer[8]), 33, 37);
+ENC enc4(15, 14, 16, &(encLayer[12]),34, 38);
 
 // clang-format on
 
