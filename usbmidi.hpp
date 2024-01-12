@@ -1,7 +1,7 @@
 #ifndef CUSBMIDI_H
 #define CUSBMIDI_H
 
-#define MIDI_DEBUG
+// #define MIDI_DEBUG
 
 extern Adafruit_USBD_MIDI usb_midi;
 extern void actionPerformed();
@@ -11,7 +11,6 @@ void controlMessageReceived(byte channel, byte controlNumber, byte value);
 void sendControlMessage(byte channel, byte controlNumber, byte value) {
   uint8_t packet[] = {0x0B, 0xB0 | (channel - 1), controlNumber, value};
   usb_midi.writePacket(packet);
-  usb_midi.flush();
   actionPerformed();
 
   #ifdef MIDI_DEBUG
@@ -48,6 +47,7 @@ void midiRoutine() {
     numPacketsReceived += 1;
   }
 
+  usb_midi.flush();
   if (numPacketsReceived == 0) return;
   Serial.println(numPacketsReceived);
 
