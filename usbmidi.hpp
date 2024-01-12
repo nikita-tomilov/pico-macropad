@@ -28,24 +28,40 @@ void sendControlMessage(byte channel, byte controlNumber, byte value) {
 }
 
 void midiRoutine() {
-  uint8_t packet[4];
-  if (usb_midi.readPacket(packet)) {
+  uint8_t packet[256];
+  uint8_t numPacketsReceived = 0;
+  uint8_t offset = 0;
+
+  while (usb_midi.readPacket(&(packet[offset]))) {
     #ifdef MIDI_DEBUG
     Serial.print("IN  ");
-    Serial.print(packet[0], HEX);
+    Serial.print(packet[offset], HEX);
     Serial.print(" ");
-    Serial.print(packet[1], HEX);
+    Serial.print(packet[offset + 1], HEX);
     Serial.print(" ");
-    Serial.print(packet[2], HEX);
+    Serial.print(packet[offset + 2], HEX);
     Serial.print(" ");
-    Serial.print(packet[3], HEX);
+    Serial.print(packet[offset + 3], HEX);
     Serial.println();
     #endif
-    
-    if (packet[0] == 0x0B) {
+    offset += 4;
+    numPacketsReceived += 1;
+  }
+
+  if (numPacketsReceived == 0) return;
+  Serial.println(numPacketsReceived);
+
+  uint8_t numPacketsParsed = 0;
+  offset = 0;
+  while (numPacketsParsed < numPacketsReceived) {
+
+    if (packet[offset] == 0x0B) {
       actionPerformed();
-      controlMessageReceived(packet[1] - 0xB0 + 1, packet[2], packet[3]);
+      controlMessageReceived(packet[offset + 1] - 0xB0 + 1, packet[offset + 2], packet[offset + 3]);
     }
+
+    offset += 4;
+    numPacketsParsed += 1;
   }
 }
 
