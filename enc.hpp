@@ -206,7 +206,7 @@ void ENC::midiChangedExternal(byte midiControlNumber, byte value) {
     if (midiControlNumbers[i] == midiControlNumber) {
       if (midiValues[i] != value) {
         midiValues[i] = value;
-        midiChangedInternal(i);
+        // midiChangedInternal(i);
       }
     }
   }
