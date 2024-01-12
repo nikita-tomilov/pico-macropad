@@ -167,7 +167,7 @@ void ENC::downMidiLayer()
 void ENC::midiDecrease()
 {
   byte curVal = midiValues[midiLayer];
-  if (curVal > 0) {
+  if (curVal > 1) {
     curVal = curVal - 1;
   }
   midiValues[midiLayer] = curVal;
