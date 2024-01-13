@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <vector>
+#include <FastLED.h>
 
 #include "led.hpp"
 LED red(5, 1023);
@@ -8,6 +9,10 @@ LED yellow(9, 1023);
 LED blue(11, 768);
 LED white(1, 1023);
 std::vector<LED> allLeds = { red, green, yellow, blue, white };
+
+#define NUM_LEDS 8
+CRGB leds[NUM_LEDS];
+#include "ledring.h"
 
 #include "usbkbd.hpp"
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
@@ -89,6 +94,12 @@ void changeMode(int newMode) {
       it.keyup = it.defaultkeyup;
     }
   }
+
+  if (mode == 1) {
+    enableMidiMode();
+  } else {
+    disableMidiMode();
+  }
 }
 
 void enc1leftH() {
@@ -107,18 +118,18 @@ void enc1rightH() {
   changeMode(newMode);
 }
 
-
-volatile byte midiVal = 64;
-void changeMidiVal(byte newVal) {
-  midiVal = newVal;
-  sendControlMessage(1, 31, midiVal);
-}
 void controlMessageReceived(byte channel, byte controlNumber, byte value) {
   if (channel == 1) {
     enc1.midiChangedExternal(controlNumber, value);
     enc2.midiChangedExternal(controlNumber, value);
     enc3.midiChangedExternal(controlNumber, value);
     enc4.midiChangedExternal(controlNumber, value);
+  }
+}
+
+void midiValueUpdated(byte controlNumber, byte value) {
+  if (controlNumber == 31) {
+    setMidiValue(value);
   }
 }
 
@@ -137,7 +148,7 @@ void setup(void) {
 
   analogWriteFreq(1000);
   analogWriteRange(1024);
-
+  ledringSetup();
   // white.on();
 
   enc1.rightH = [&] {
